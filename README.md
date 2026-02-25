@@ -1,9 +1,23 @@
 # Introduction
 
-This is a ComputerCraft-based system for breeding hybrid bees in GregTech:New Horizons (GT:NH). This system relies on selective breeding in order to converge on the best possible genetics for the bees . <br />
-This version was designed for use in HV, when you gain access to computers. <br />
+This project implements a genetic optimization algorithm running on in-game programmable computers (via the OpenComputers mod) inside the modpack GregTech: New Horizons (GT:NH). It automates the selective breeding of bees, which in GT:NH have heritable genetic traits that affect in-game resource production. This system converges on the optimal trait combination across generations with no manual intervention beyond initial setup.
+
+At its core, the system functions as a multi-stage genetic algorithm: it maintains a population of candidates, scores each one against a fitness function (desired traits and species), selects the highest-quality individuals for breeding, and feeds offspring back into the pool. All logic runs on in-game computers communicating with physical automation blocks via a component network.
+
+This version targets the HV (High Voltage) progression tier, which is when in-game computers first become available.
+
+
+# Prerequesites
+
+ - GregTech: New Horizons modpack (HV tier or above)
+ - Access to OpenComputers components (Redstone card)
+ - Access to an Apiary, Scanner, and Transposers in-game
+ - Oblivion Frames (recommended for optimal breeding speed)
 
 # System Overview
+
+The diagram below shows the full data flow of the system — from introducing new genetic material, to scanning and filtering candidates, to refining the best individuals each generation.
+
 ```mermaid
 graph LR
 M(Mutator Apiary) --> S(Scanner)
@@ -15,16 +29,27 @@ G --> R(Refinement Apiary)
 R -- Low health frames--> F((Frame system))
 F -- Healed/stored frames --> R
 ```
-This system is designed to cover all of the aspects of breeding a new hybrid species and thus has a lot of systems for different. <br /> <br />
 
-```Mutator Apiary:``` This section breeds the types of bees in order to create hybrids of the desired species. This part inserts new genes into the system so that the hybrid type can be created. <br />
-```Scanner:``` This section scans the bees so that their traits can be read to determine genetic value and whether or not the drones are hybrid. <br />
-```Drone Filter:``` This section sends queens back to their respective section in the mutator and picks out hybrid drones. <br />
-```Best Gene Selector:``` This section chooses the highest quality genes from the inventory of drones and then pairs it with the princess and sends it to the refinement apiary. <br />
-```Refinement Apiary:``` This breeds the bees and sends the mutated drones back to be scanned, where they will then re-enter the genepool. <br />
-```Frame System:``` This section manages the frames that are being used in the Refinement Apiary, removing low health frames and replacing them with new ones. This drastically speeds up the time that breeding takes when you use Oblivion frames. <br />
+`Mutator Apiary:` Crossbreeds two parent species to introduce a target hybrid into the gene pool. Functionally, this is the **mutation/crossover** stage of the algorithm.
+
+`Scanner:` Reads each bee's genetic traits via the OpenComputers component network to determine its fitness score and whether it has achieved hybrid status. This is the **evaluation** stage.
+
+`Drone Filter:` Routes non-hybrid bees back to the Mutator and forwards confirmed hybrids downstream for further refinement. This is the **selection filter**.
+
+`Best Gene Selector:` Acts as the **fitness function** — scoring the pool of hybrid candidates and pairing the highest-quality individual with a queen for the next breeding cycle.
+
+`Refinement Apiary:` The core **breeding loop** — breeds the selected pair and feeds offspring back into the scanner to re-enter the gene pool each generation.
+
+`Frame System:` Manages consumable breeding accelerants (Oblivion Frames), automatically replacing depleted ones to keep the breeding loop running at maximum throughput.
+#Installation
 
 # Usage
+Place a OpenComputers computer in your setup with an internet card.
+Run the following command in the computer terminal to download the script:
+```
+   wget https://github.com/jkerns128/GregTech-New-Horizons-Automated-Bee-Breeding-System/edit/main/README.md
+```
+Configure the transposer addresses and block orientations inside AIpiary.lua to match your physical setup (see System Setup below).
 
 ```AIpiary.lua``` runs the whole system, you will need to set some of the addresses for the transposers and keep in mind the orientation of the blocks when placing your system. <br />
 
@@ -38,12 +63,13 @@ The program has 4 arguments, 3 of which are required <br /><br />
 
 
 ## System Setup
-This video goes over all of the parts of the system  in-depth. <br />
+This video goes over all of the parts of the system more in-depth. <br />
 
 [![Watch the video](https://img.youtube.com/vi/KSrcwvrrfcc/maxresdefault.jpg)](https://youtu.be/KSrcwvrrfcc?si=Fo8rvJ5OF9nfvns5)
 
 
 # Future Improvements
-As of right now, this system requires a person to insert the bees. In the future I would like to do a segment for automatic searching for bees that have not yet been breeded and have the system breed those bees autonomously. That would require another system that can house a database of bees which is something that is possible in the modpack. <br /> <br />
+A configuration system is planned to simplify transposer direction setup, making the physical installation process easier for new users.
 
-Some code could also be rewritten for clarity. Currently, all of the instructions for transposer moves are based on the setup that I have in my world, writing a function to easily change the directions of the system would make the setup easier. <br />
+Beyond that, a longer-term goal/project that would be interesting to see is the automatic discovery of unbreed species, allowing the system to autonomously queue and breed them without any manual intervention. This would be backed by an in-game bee database, which is fully possible within the modpack.
+
